@@ -1,1 +1,70 @@
 services:
+  postgres:
+    image: postgres:17.0
+    restart: "always"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: ${PG_DB}
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+  pgadmin:
+    image: dpage/pgadmin4:9.1.0
+    restart: "no"
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json
+      - ./docker/pgadmin/pgpass:/pgadmin4/pgpass
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:80/misc/ping || exit -1
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    entrypoint: /bin/sh -c "chmod 600 /pgadmin4/pgpass; /entrypoint.sh;"
+  kafka:
+    image: bitnami/kafka:3.9.0
+    restart: "no"
+    ports:
+      - "29092:29092"
+      - "9092:9092"
+    volumes:
+      - kafka_data:/bitnami/kafka
+    environment:
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_KRAFT_CLUSTER_ID: e4Zslb6xT7qGs984hGQmZA
+      KAFKA_CFG_PROCESS_ROLES: controller,broker
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://kafka:9093
+    healthcheck:
+      test: kafka-topics.sh --bootstrap-server localhost:9092 --list
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    labels:
+      amplicode.image: bitnami/kafka
+volumes:
+  postgres_data:
+  pgadmin_data:
+  kafka_data:
