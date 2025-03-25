@@ -2,6 +2,7 @@ package ru.meeral.client.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.meeral.client.dto.ClientDTO;
 import ru.meeral.client.exception.ClientNotFoundException;
 import ru.meeral.client.model.Client;
@@ -14,6 +15,7 @@ import java.util.Optional;
 public class ClientService {
     private final ClientRepository clientRepository;
 
+    @Transactional
     public Client createOrGetClient(ClientDTO dto) {
         if (dto.getEmail() == null || dto.getEmail().isEmpty()) {
             throw new IllegalArgumentException("Email не может быть пустым");
@@ -28,6 +30,7 @@ public class ClientService {
                 .build()));
     }
 
+    @Transactional(readOnly = true)
     public Client getClientById(Long id) {
         return clientRepository.findById(id)
                 .orElseThrow(() -> new ClientNotFoundException("Client not found with id: " + id));

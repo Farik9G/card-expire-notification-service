@@ -1,11 +1,8 @@
 package ru.meeral.card.controller;
 
-
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.meeral.card.dto.CardDTO;
 import ru.meeral.card.model.Card;
 import ru.meeral.card.service.CardService;
 
@@ -17,9 +14,9 @@ import java.util.List;
 public class CardController {
     private final CardService cardService;
 
-    @PostMapping
-    public ResponseEntity<Card> createCard(@Valid @RequestBody CardDTO dto) {
-        return ResponseEntity.ok(cardService.createCard(dto));
+    @PostMapping("/{clientId}")
+    public ResponseEntity<Card>     createCard(@PathVariable Long clientId) {
+        return ResponseEntity.ok(cardService.createCard(clientId));
     }
 
     @PutMapping("/{cardId}/cancel")

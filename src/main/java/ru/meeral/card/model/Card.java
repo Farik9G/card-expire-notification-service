@@ -22,7 +22,7 @@ public class Card {
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, length = 16)
     private String cardNumber;
 
     private LocalDate issueDate;
