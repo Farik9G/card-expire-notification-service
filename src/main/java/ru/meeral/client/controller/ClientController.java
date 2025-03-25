@@ -1,18 +1,20 @@
-package ru.meeral.clientservice.controller;
+package ru.meeral.client.controller;
 
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.meeral.clientservice.dto.ClientDTO;
-import ru.meeral.clientservice.model.Client;
-import ru.meeral.clientservice.service.ClientService;
+import ru.meeral.card.service.CardExpiryService;
+import ru.meeral.client.dto.ClientDTO;
+import ru.meeral.client.model.Client;
+import ru.meeral.client.service.ClientService;
 
 @RestController
 @RequestMapping("/clients")
 @RequiredArgsConstructor
 public class ClientController {
     private final ClientService clientService;
+    private final CardExpiryService cardExpiryService;
 
     @PostMapping
     public ResponseEntity<Client> createOrGetClient(@RequestBody ClientDTO dto) {
@@ -26,8 +28,8 @@ public class ClientController {
     }
     @PostMapping("/check-expiry")
     public ResponseEntity<String> checkExpiryForAllClients() {
-        clientService.checkAllClientsForExpiry();
-        return ResponseEntity.ok("Expiry check triggered.");
+        cardExpiryService.checkAllClientsForExpiry();
+        return ResponseEntity.ok("Проверка срока действия карт запущена.");
     }
 
 

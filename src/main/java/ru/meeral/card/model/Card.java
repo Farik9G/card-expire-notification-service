@@ -1,8 +1,8 @@
-package ru.meeral.cardservice.model;
+package ru.meeral.card.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import ru.meeral.clientservice.model.Client;
+import ru.meeral.client.model.Client;
 
 import java.time.LocalDate;
 

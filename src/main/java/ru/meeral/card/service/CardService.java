@@ -1,12 +1,12 @@
-package ru.meeral.cardservice.service;
+package ru.meeral.card.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.meeral.cardservice.dto.CardDTO;
-import ru.meeral.cardservice.model.Card;
-import ru.meeral.cardservice.model.CardStatus;
-import ru.meeral.cardservice.repository.CardRepository;
-import ru.meeral.clientservice.repository.ClientRepository;
+import ru.meeral.card.dto.CardDTO;
+import ru.meeral.card.model.Card;
+import ru.meeral.card.model.CardStatus;
+import ru.meeral.card.repository.CardRepository;
+import ru.meeral.client.repository.ClientRepository;
 
 import java.util.List;
 

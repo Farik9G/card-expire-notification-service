@@ -1,53 +1,60 @@
 services:
+  client-service:
+    image: meera7/client-service:latest
+    restart: "always"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    environment:
+      POSTGRESS_USER: ${POSTGRES_USER}
+      POSTGRESS_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRESS_DB: ${POSTGRES_DB}
+      DATASOURCE_URL: ${DATASOURCE_URL}
+      DATASOURCE_USERNAME: ${DATASOURCE_USERNAME}
+      DATASOURCE_PASSWORD: ${DATASOURCE_PASSWORD}
+      EMAIL_ADDRESS: ${EMAIL_ADDRESS}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+    healthcheck:
+      test: curl -f http://localhost:8081/actuator/health || exit 1
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
   postgres:
     image: postgres:17.0
-    restart: "always"
+    restart: "no"
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: ${PG_USER}
-      POSTGRES_PASSWORD: ${PG_PASSWORD}
-      POSTGRES_DB: ${PG_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     healthcheck:
       test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
       interval: 10s
       timeout: 5s
       start_period: 10s
       retries: 5
-  pgadmin:
-    image: dpage/pgadmin4:9.1.0
-    restart: "no"
-    ports:
-      - "5050:80"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json
-      - ./docker/pgadmin/pgpass:/pgadmin4/pgpass
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
-      PGADMIN_CONFIG_SERVER_MODE: "False"
-      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:80/misc/ping || exit -1
-      interval: 10s
-      timeout: 5s
-      start_period: 10s
-      retries: 5
-    entrypoint: /bin/sh -c "chmod 600 /pgadmin4/pgpass; /entrypoint.sh;"
   kafka:
     image: bitnami/kafka:3.9.0
+    container_name: kafka
     restart: "no"
     ports:
-      - "29092:29092"
       - "9092:9092"
     volumes:
       - kafka_data:/bitnami/kafka
     environment:
-      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_ENABLE_KRAFT: yes
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: true
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://${KAFKA_BOOTSTRAP_SERVERS}
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_CFG_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_CFG_NODE_ID: 1
@@ -55,16 +62,36 @@ services:
       KAFKA_CFG_PROCESS_ROLES: controller,broker
       KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_CFG_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://kafka:9093
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      ALLOW_PLAINTEXT_LISTENER: yes
     healthcheck:
-      test: kafka-topics.sh --bootstrap-server localhost:9092 --list
+      test: kafka-topics.sh --bootstrap-server ${KAFKA_BOOTSTRAP_SERVERS} --list || exit 1
       interval: 10s
       timeout: 5s
       start_period: 30s
       retries: 5
     labels:
       amplicode.image: bitnami/kafka
+
+  notification-service:
+    image: meera7/kafka-card-notification:latest
+    container_name: notification
+    restart: "no"
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      EMAIL_ADDRESS: ${EMAIL_ADDRESS}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+    depends_on:
+      kafka:
+        condition: service_healthy
+#    healthcheck:
+#      test: curl -f http://localhost:8081/actuator/health || exit 1
+#      interval: 30s
+#      timeout: 5s
+#      start_period: 30s
+#      retries: 5
+    labels:
+      amplicode.image: springboot
 volumes:
   postgres_data:
-  pgadmin_data:
   kafka_data:

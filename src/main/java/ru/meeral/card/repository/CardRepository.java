@@ -1,11 +1,9 @@
-package ru.meeral.cardservice.repository;
+package ru.meeral.card.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import ru.meeral.cardservice.model.Card;
-import ru.meeral.cardservice.model.CardStatus;
-import ru.meeral.clientservice.model.Client;
+import ru.meeral.card.model.Card;
+import ru.meeral.client.model.Client;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public interface CardRepository extends JpaRepository<Card, Long> {

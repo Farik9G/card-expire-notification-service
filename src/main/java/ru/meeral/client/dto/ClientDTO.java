@@ -1,8 +1,6 @@
-package ru.meeral.clientservice.dto;
+package ru.meeral.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import lombok.*;
 
 import java.time.LocalDate;

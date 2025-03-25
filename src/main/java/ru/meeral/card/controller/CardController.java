@@ -1,12 +1,13 @@
-package ru.meeral.cardservice.controller;
+package ru.meeral.card.controller;
 
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.meeral.cardservice.dto.CardDTO;
-import ru.meeral.cardservice.model.Card;
-import ru.meeral.cardservice.service.CardService;
+import ru.meeral.card.dto.CardDTO;
+import ru.meeral.card.model.Card;
+import ru.meeral.card.service.CardService;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class CardController {
     private final CardService cardService;
 
     @PostMapping
-    public ResponseEntity<Card> createCard(@RequestBody CardDTO dto) {
+    public ResponseEntity<Card> createCard(@Valid @RequestBody CardDTO dto) {
         return ResponseEntity.ok(cardService.createCard(dto));
     }
 

@@ -1,4 +1,4 @@
-package ru.meeral.cardservice.model;
+package ru.meeral.card.model;
 
 public enum CardStatus {
     ACTIVE,

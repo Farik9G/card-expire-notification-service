@@ -1,7 +1,7 @@
-package ru.meeral.clientservice.repository;
+package ru.meeral.client.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import ru.meeral.clientservice.model.Client;
+import ru.meeral.client.model.Client;
 
 import java.util.Optional;
 
