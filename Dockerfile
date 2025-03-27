@@ -1,6 +1,13 @@
+FROM maven:3.9.5-eclipse-temurin-21 AS build
+WORKDIR /build
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+COPY src /build/src
+RUN mvn clean package -DskipTests -B
+
 FROM bellsoft/liberica-openjre-debian:23.0.2 AS layers
 WORKDIR /application
-COPY target/*.jar app.jar
+COPY --from=build /build/target/*.jar app.jar
 RUN java -Djarmode=layertools -jar app.jar extract
 
 FROM bellsoft/liberica-openjre-debian:23.0.2

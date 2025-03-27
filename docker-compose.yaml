@@ -1,7 +1,7 @@
 services:
   client-service:
     image: meera7/client-service:latest
-    restart: "always"
+    restart: "no"
     depends_on:
       postgres:
         condition: service_healthy

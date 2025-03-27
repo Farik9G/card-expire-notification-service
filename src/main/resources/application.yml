@@ -9,22 +9,23 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     baseline-on-migrate: true
     baseline-version: 0
   kafka:
-    consumer:
-      group-id: notification-group
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "*"
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 5
+      delivery.timeout.ms: 30000
+      linger.ms: 5
+      batch.size: 16384
+      max.in.flight.requests.per.connection: 1
+      enable.idempotence: true
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     topic:
       card-expiry-notifications: card-expiry-topic

@@ -66,6 +66,14 @@ public class CardService {
         return cardNumberWithoutCheckDigit + checkDigit;
     }
 
+    @Transactional
+    public void expireCard(Long cardId) {
+        var card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new RuntimeException("Карта не найдена"));
+        card.setStatus(CardStatus.EXPIRED);
+        cardRepository.save(card);
+    }
+
     private int calculateLuhnCheckDigit(String cardNumberWithoutCheckDigit) {
         int sum = 0;
         boolean alternate = false;

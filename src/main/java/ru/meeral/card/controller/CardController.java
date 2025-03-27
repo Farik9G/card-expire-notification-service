@@ -15,7 +15,7 @@ public class CardController {
     private final CardService cardService;
 
     @PostMapping("/{clientId}")
-    public ResponseEntity<Card>     createCard(@PathVariable Long clientId) {
+    public ResponseEntity<Card> createCard(@PathVariable Long clientId) {
         return ResponseEntity.ok(cardService.createCard(clientId));
     }
 
