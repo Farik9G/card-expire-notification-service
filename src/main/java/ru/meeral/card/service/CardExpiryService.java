@@ -4,6 +4,7 @@ package ru.meeral.card.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.meeral.card.model.Card;
 import ru.meeral.card.model.CardStatus;
 import ru.meeral.card.repository.CardRepository;
@@ -23,19 +24,20 @@ public class CardExpiryService {
     private final CardRepository cardRepository;
     private final KafkaMessageProducer kafkaMessageProducer;
 
-    @Scheduled(cron = "0 0 12 * * ?") // Запуск каждый день в 12:00
+    @Transactional
+    @Scheduled(cron = "0 0 2 * * ?") // Запуск каждый день в 12:00
     public void checkAllClientsForExpiry() {
-        List<Card> cards = cardRepository.findByStatus(CardStatus.ACTIVE);
         LocalDate now = LocalDate.now();
+        LocalDate oneMonthLater = now.plusMonths(1);
+
+        List<Card> cards = cardRepository.findActiveExpiringCards(CardStatus.ACTIVE, now, oneMonthLater);
 
         for (Card card : cards) {
-            LocalDate expiryDate = card.getExpiryDate();
-            if (expiryDate == null) continue;
-
-            if (expiryDate.minusMonths(1).isBefore(now) && expiryDate.isAfter(now)) {
-                sendExpiryNotification(card);
-            } else if (!expiryDate.isAfter(now)) {
+            if (card.getExpiryDate().isBefore(now) || card.getExpiryDate().isEqual(now)) {
+                log.info("Карта с номером {} истекла и будет заменена", card.getCardNumber());
                 replaceExpiredCard(card);
+            } else {
+                sendExpiryNotification(card);
             }
         }
     }

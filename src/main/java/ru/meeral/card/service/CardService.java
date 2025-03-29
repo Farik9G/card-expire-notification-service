@@ -46,7 +46,6 @@ public class CardService {
                 .orElseThrow(() -> new RuntimeException("Карта не найдена"));
 
         card.setStatus(CardStatus.CANCELLED);
-        cardRepository.save(card);
     }
 
     @Transactional(readOnly = true)
@@ -71,7 +70,6 @@ public class CardService {
         var card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new RuntimeException("Карта не найдена"));
         card.setStatus(CardStatus.EXPIRED);
-        cardRepository.save(card);
     }
 
     private int calculateLuhnCheckDigit(String cardNumberWithoutCheckDigit) {

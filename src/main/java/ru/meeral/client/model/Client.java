@@ -1,13 +1,17 @@
 package ru.meeral.client.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import ru.meeral.card.model.Card;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "clients")
@@ -39,4 +43,8 @@ public class Client {
     @Email(message = "Некорректный формат email")
     @Column(unique = true, nullable = false)
     private String email;
+
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Card> cards = new ArrayList<>();
 }

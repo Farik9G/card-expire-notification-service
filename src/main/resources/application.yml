@@ -46,3 +46,8 @@ management:
     web:
       exposure:
         include: "*"
+logging:
+  level:
+    hibernate:
+      SQL: debug
+      org.hibernate.type.descriptor.sql.BasicBinder: TRACE
