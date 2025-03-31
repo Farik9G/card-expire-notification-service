@@ -1,4 +1,4 @@
-package ru.meeral.client.model;
+package ru.meeral.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
-import ru.meeral.card.model.Card;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -46,5 +45,6 @@ public class Client {
 
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
+    @Builder.Default
     private List<Card> cards = new ArrayList<>();
 }

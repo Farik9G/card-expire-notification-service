@@ -1,13 +1,13 @@
-package ru.meeral.client.controller;
+package ru.meeral.controller;
 
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.meeral.card.service.CardExpiryService;
-import ru.meeral.client.dto.ClientDTO;
-import ru.meeral.client.model.Client;
-import ru.meeral.client.service.ClientService;
+import ru.meeral.service.CardExpiryService;
+import ru.meeral.dto.ClientDTO;
+import ru.meeral.model.Client;
+import ru.meeral.service.ClientService;
 
 @RestController
 @RequestMapping("/clients")

@@ -1,14 +1,15 @@
-package ru.meeral.card.service;
+package ru.meeral.service;
 
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.meeral.card.model.Card;
-import ru.meeral.card.model.CardStatus;
-import ru.meeral.card.repository.CardRepository;
-import ru.meeral.client.model.Client;
+import ru.meeral.exception.*;
+import ru.meeral.model.Card;
+import ru.meeral.enums.CardStatus;
+import ru.meeral.repository.CardRepository;
+import ru.meeral.model.Client;
 import ru.meeral.notification.dto.NotificationDTO;
 import ru.meeral.notification.producer.KafkaMessageProducer;
 import lombok.extern.slf4j.Slf4j;
@@ -25,12 +26,15 @@ public class CardExpiryService {
     private final KafkaMessageProducer kafkaMessageProducer;
 
     @Transactional
-    @Scheduled(cron = "0 0 2 * * ?") // Запуск каждый день в 12:00
+    @Scheduled(cron = "0 0 2 * * ?") // Запуск каждый день в 2:00
     public void checkAllClientsForExpiry() {
         LocalDate now = LocalDate.now();
         LocalDate oneMonthLater = now.plusMonths(1);
 
         List<Card> cards = cardRepository.findActiveExpiringCards(CardStatus.ACTIVE, now, oneMonthLater);
+            if (cards == null) {
+                throw new CardServiceException("Ошибка: запрос карт вернул null");
+            }
 
         for (Card card : cards) {
             if (card.getExpiryDate().isBefore(now) || card.getExpiryDate().isEqual(now)) {
@@ -44,6 +48,9 @@ public class CardExpiryService {
 
     private void sendExpiryNotification(Card card) {
         Client client = card.getClient();
+        if (client == null) {
+            throw new ClientNotFoundException(card.getCardNumber());
+        }
         NotificationDTO notification = new NotificationDTO(
                 client.getEmail(),
                 String.format(
@@ -52,14 +59,26 @@ public class CardExpiryService {
                 ),
                 card.getExpiryDate()
         );
+
         kafkaMessageProducer.sendNotification(notification);
+
         log.info("Уведомление отправлено клиенту {} ({}) о скором истечении карты: {}",
                 client.getId(), client.getEmail(), card.getExpiryDate());
     }
 
     private void replaceExpiredCard(Card expiredCard) {
         Client client = expiredCard.getClient();
+
+        if (client == null) {
+            throw new ClientNotFoundException(expiredCard.getCardNumber());
+        }
+
         Card newCard = cardService.createCard(client.getId());
+
+        if (newCard == null) {
+            throw new CardReplacementException(client.getId());
+        }
+
         cardService.expireCard(expiredCard.getId());
 
         NotificationDTO notification = new NotificationDTO(
@@ -70,6 +89,7 @@ public class CardExpiryService {
                 ),
                 newCard.getExpiryDate()
         );
+
         kafkaMessageProducer.sendNotification(notification);
 
         log.info("Клиенту {} ({}) отправлено уведомление о замене карты. Старая карта: {}, новая карта: {}",

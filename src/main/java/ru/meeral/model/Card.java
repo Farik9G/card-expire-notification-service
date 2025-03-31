@@ -1,9 +1,9 @@
-package ru.meeral.card.model;
+package ru.meeral.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-import ru.meeral.client.model.Client;
+import ru.meeral.enums.CardStatus;
 
 import java.time.LocalDate;
 

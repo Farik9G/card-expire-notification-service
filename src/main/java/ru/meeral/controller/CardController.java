@@ -1,10 +1,10 @@
-package ru.meeral.card.controller;
+package ru.meeral.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.meeral.card.model.Card;
-import ru.meeral.card.service.CardService;
+import ru.meeral.model.Card;
+import ru.meeral.service.CardService;
 
 import java.util.List;
 

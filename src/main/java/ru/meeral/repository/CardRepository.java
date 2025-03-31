@@ -1,10 +1,10 @@
-package ru.meeral.card.repository;
+package ru.meeral.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import ru.meeral.card.model.Card;
-import ru.meeral.card.model.CardStatus;
+import ru.meeral.model.Card;
+import ru.meeral.enums.CardStatus;
 
 import java.time.LocalDate;
 import java.util.List;

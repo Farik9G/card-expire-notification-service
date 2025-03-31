@@ -1,4 +1,4 @@
-package ru.meeral.client.dto;
+package ru.meeral.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;

@@ -1,12 +1,14 @@
-package ru.meeral.card.service;
+package ru.meeral.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.meeral.card.model.Card;
-import ru.meeral.card.model.CardStatus;
-import ru.meeral.card.repository.CardRepository;
-import ru.meeral.client.repository.ClientRepository;
+import ru.meeral.exception.CardNotFoundException;
+import ru.meeral.exception.ClientNotFoundException;
+import ru.meeral.model.Card;
+import ru.meeral.enums.CardStatus;
+import ru.meeral.repository.CardRepository;
+import ru.meeral.repository.ClientRepository;
 import java.security.SecureRandom;
 
 import java.time.LocalDate;
@@ -22,12 +24,13 @@ public class CardService {
     @Transactional
     public Card createCard(Long clientId) {
         var client = clientRepository.findById(clientId)
-                .orElseThrow(() -> new RuntimeException("Клиент не найден"));
+                .orElseThrow(() -> new ClientNotFoundException(clientId));
 
         String cardNumber;
         do {
             cardNumber = generateUniqueCardNumber();
         } while (cardRepository.existsByCardNumber(cardNumber));
+
 
         var card = Card.builder()
                 .client(client)
@@ -43,7 +46,7 @@ public class CardService {
     @Transactional
     public void cancelCard(Long cardId) {
         var card = cardRepository.findById(cardId)
-                .orElseThrow(() -> new RuntimeException("Карта не найдена"));
+                .orElseThrow(() -> new CardNotFoundException(cardId));
 
         card.setStatus(CardStatus.CANCELLED);
     }
@@ -51,6 +54,13 @@ public class CardService {
     @Transactional(readOnly = true)
     public List<Card> getClientCards(Long clientId) {
         return cardRepository.findByClientId(clientId);
+    }
+
+    @Transactional
+    public void expireCard(Long cardId) {
+        var card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new CardNotFoundException(cardId));
+        card.setStatus(CardStatus.EXPIRED);
     }
 
     private String generateUniqueCardNumber() {
@@ -63,13 +73,6 @@ public class CardService {
         int checkDigit = calculateLuhnCheckDigit(cardNumberWithoutCheckDigit);
 
         return cardNumberWithoutCheckDigit + checkDigit;
-    }
-
-    @Transactional
-    public void expireCard(Long cardId) {
-        var card = cardRepository.findById(cardId)
-                .orElseThrow(() -> new RuntimeException("Карта не найдена"));
-        card.setStatus(CardStatus.EXPIRED);
     }
 
     private int calculateLuhnCheckDigit(String cardNumberWithoutCheckDigit) {

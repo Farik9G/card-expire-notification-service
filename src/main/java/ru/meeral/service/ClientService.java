@@ -1,15 +1,17 @@
-package ru.meeral.client.service;
+package ru.meeral.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.meeral.client.dto.ClientDTO;
-import ru.meeral.client.exception.ClientNotFoundException;
-import ru.meeral.client.model.Client;
-import ru.meeral.client.repository.ClientRepository;
+import ru.meeral.dto.ClientDTO;
+import ru.meeral.exception.ClientNotFoundException;
+import ru.meeral.model.Client;
+import ru.meeral.repository.ClientRepository;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ClientService {
@@ -17,9 +19,6 @@ public class ClientService {
 
     @Transactional
     public Client createOrGetClient(ClientDTO dto) {
-        if (dto.getEmail() == null || dto.getEmail().isEmpty()) {
-            throw new IllegalArgumentException("Email не может быть пустым");
-        }
         Optional<Client> existingClient = clientRepository.findByEmail(dto.getEmail());
         return existingClient.orElseGet(() -> clientRepository.save(Client.builder()
                 .firstName(dto.getFirstName())
@@ -33,6 +32,6 @@ public class ClientService {
     @Transactional(readOnly = true)
     public Client getClientById(Long id) {
         return clientRepository.findById(id)
-                .orElseThrow(() -> new ClientNotFoundException("Client not found with id: " + id));
+                .orElseThrow(() -> new ClientNotFoundException(id));
     }
 }
